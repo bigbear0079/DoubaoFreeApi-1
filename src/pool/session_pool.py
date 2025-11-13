@@ -106,7 +106,10 @@ class SessionPool:
                 data = json.load(f)
             
             for session_data in data:
-                self.create_session(guest=False, **session_data)
+                # 检查 cookie 中是否包含 sessionid，如果没有则视为 guest
+                cookie = session_data.get('cookie', '')
+                is_guest = 'sessionid=' not in cookie
+                self.create_session(guest=is_guest, **session_data)
             
             logger.info(f"已从文件加载会话配置")
         except Exception as e:

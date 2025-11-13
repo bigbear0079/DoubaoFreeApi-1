@@ -17,7 +17,8 @@ async def chat_completion(
     conversation_id: str = None, 
     attachments: list[dict] = [], 
     use_auto_cot: bool = False, 
-    use_deep_think: bool = False
+    use_deep_think: bool = False,
+    content_type: int = 2001
 ):
     # 获取会话配置
     session = session_pool.get_session(conversation_id, guest)
@@ -59,7 +60,7 @@ async def chat_completion(
         "messages": [
             {
                 "content": json.dumps({"text": prompt}),
-                "content_type": 2001,
+                "content_type": content_type,
                 "attachments": attachments,
                 "references": []
             }
@@ -96,6 +97,9 @@ async def chat_completion(
                     text, image_urls, conversation_id, message_id, section_id = await handle_sse(response)
                     session_pool.set_session(conversation_id, session)
                     return text, image_urls, conversation_id, message_id, section_id
+                except RateLimitException:
+                    session_pool.set_session(conversation_id, session, rate_limited=True)
+                    raise HTTPException(status_code=429, detail=f"频率限制，当前会话已被限制")
                 except LimitedException:
                     session_pool.del_session(session)
                     raise HTTPException(status_code=500, detail=f"游客限制5次会话已用完，请重使用新Session")
@@ -179,6 +183,9 @@ async def handle_sse(response: aiohttp.ClientResponse):
                     text = text.lstrip('\n').rstrip("\n")
                     logger.debug(f"SSE流结束: 获取到文本长度={len(text)}, 图片数量={len(image_urls)}")
                     return text, image_urls, conversation_id, message_id, section_id
+                elif event_type == 2005:
+                    # 频率限制
+                    raise RateLimitException()
                 else:
                     logger.warning(f"未知的流类型 {event_type}")
             except Exception as e:
@@ -374,6 +381,11 @@ async def delete_conversation(conversation_id: str) -> tuple[bool, str]:
 
 
 class LimitedException(Exception):
+    pass
+
+
+class RateLimitException(Exception):
+    """频率限制异常"""
     pass
 
 

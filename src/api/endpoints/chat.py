@@ -2,6 +2,7 @@ from fastapi import APIRouter, Body, Query, HTTPException
 from src.service import chat_completion, delete_conversation
 from src.model.response import CompletionResponse, DeleteResponse
 from src.model.request import CompletionRequest
+from src.service.video_storage import start_video_fetch_task
 
 
 router = APIRouter()
@@ -23,15 +24,21 @@ async def api_completions(completion: CompletionRequest = Body()):
             section_id=completion.section_id,
             attachments=completion.attachments,
             use_auto_cot=completion.use_auto_cot,
-            use_deep_think=completion.use_deep_think
+            use_deep_think=completion.use_deep_think,
+            content_type=completion.content_type
         )
+
+        # 如果是视频生成请求 (content_type=2020)，启动后台任务获取视频链接
+        if completion.content_type == 2020:
+            start_video_fetch_task(conv_id, msg_id, timeout=25000)
+
         return CompletionResponse(
-            text=text, 
-            img_urls=imgs, 
-            conversation_id=conv_id, 
-            messageg_id=msg_id, 
+            text=text,
+            img_urls=imgs,
+            conversation_id=conv_id,
+            message_id=msg_id,
             section_id=sec_id
-            )
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

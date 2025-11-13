@@ -8,6 +8,7 @@ class CompletionRequest(BaseModel):
     section_id: str | None = None
     use_deep_think: bool = False
     use_auto_cot: bool = False
+    content_type: int = 2001  # 默认文字消息，2020=视频，2074=图片等
 
 
 class AttachmentRequest(BaseModel):

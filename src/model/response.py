@@ -6,7 +6,7 @@ class CompletionResponse(BaseModel):
     text: str
     img_urls: list[str]
     conversation_id: str
-    messageg_id: str
+    message_id: str
     section_id: str
     
     
