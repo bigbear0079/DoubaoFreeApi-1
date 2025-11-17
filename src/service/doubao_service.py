@@ -201,9 +201,12 @@ async def upload_file(file_type: int, file_name: str, file_data: bytes):
     3. 通过 upload 上传文件数据
     4. 通过 commit-upload 确认上传
     """
-    # 生成文件与用户无关，随机挑一个session
-    session = session_pool.get_session()
-    logger.debug(f"开始上传文件: {file_name}, 类型: {file_type}, 大小: {len(file_data)} 字节")
+    # 上传文件需要登录账号，不能使用游客session
+    session = session_pool.get_session(guest=False)
+    if not session:
+        raise HTTPException(status_code=500, detail="没有可用的登录账号，上传文件需要登录")
+    is_guest = 'sessionid=' not in session.cookie
+    logger.debug(f"开始上传文件: {file_name}, 类型: {file_type}, 大小: {len(file_data)} 字节，使用session: {'游客' if is_guest else '登录账号'}")
     # ------ HEADERS -------
     DEFAULT_HEADERS = {
         'content-type': 'application/json',
@@ -239,6 +242,7 @@ async def upload_file(file_type: int, file_name: str, file_data: bytes):
         }
         resp = await client.post(url=prepare_url, headers=DEFAULT_HEADERS, json=prepare_payload)
         prepare_data = resp.json()
+        logger.debug(f"prepare_upload 响应: {prepare_data}")
         upload_info = prepare_data.get("data", {})
         
         # APPLY UPLOAD
@@ -246,6 +250,7 @@ async def upload_file(file_type: int, file_name: str, file_data: bytes):
         session_token = upload_info.get("upload_auth_token", {}).get("session_token")
         access_key = upload_info.get("upload_auth_token", {}).get("access_key")
         secret_key = upload_info.get("upload_auth_token", {}).get("secret_key")
+        logger.debug(f"AWS凭证 - access_key: {access_key}, secret_key: {'***' if secret_key else None}, session_token: {'***' if session_token else None}")
         file_size = len(file_data)
         if not '.' in file_name:
             raise HTTPException(status_code=500, detail="文件名格式错误，注意附带后缀名")

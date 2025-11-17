@@ -160,9 +160,9 @@ async def auto_get_session():
         except Exception as e:
           print(f"\n✗ 保存失败: {str(e)}")
         
-        # 等待 3 秒后关闭
-        print("\n浏览器将在 3 秒后自动关闭...")
-        await asyncio.sleep(3)
+        # 等待 20 秒后关闭
+        print("\n浏览器将在 200 秒后自动关闭...")
+        await asyncio.sleep(30)
         
       else:
         print("\n✗ 信息不完整，请重试")
