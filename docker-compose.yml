@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  doubao-api:
+    build: .
+    container_name: doubao-free-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # 挂载数据文件，保证重启后数据不丢失
+      - ./session.json:/app/session.json
+      - ./video_links.json:/app/video_links.json
+      # 如果需要开发时实时更新代码，可以取消下面的注释
+      # - ./src:/app/src
+      # - ./app.py:/app/app.py
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    networks:
+      - doubao-network
+
+networks:
+  doubao-network:
+    driver: bridge
