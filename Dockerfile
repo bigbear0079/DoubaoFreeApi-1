@@ -1,5 +1,6 @@
 # 使用 Playwright 官方镜像（已包含浏览器和所有依赖）
-FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy
+# 注意：镜像版本需要与 requirements.txt 中的 playwright 版本匹配
+FROM mcr.microsoft.com/playwright/python:v1.52.0-jammy
 
 # 设置工作目录
 WORKDIR /app
