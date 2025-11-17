@@ -22,7 +22,7 @@ class VideoTask:
     self.status = "pending"  # pending, processing, completed, failed
     self.video_urls: list[str] = []
     self.retry_count = 0
-    self.max_retries = 5
+    self.max_retries = 10
     self.created_at = datetime.now().isoformat()
     self.updated_at = datetime.now().isoformat()
     self.error: Optional[str] = None
@@ -46,7 +46,7 @@ class VideoTask:
     task.status = data.get("status", "pending")
     task.video_urls = data.get("video_urls", [])
     task.retry_count = data.get("retry_count", 0)
-    task.max_retries = data.get("max_retries", 5)
+    task.max_retries = data.get("max_retries", 10)
     task.created_at = data.get("created_at", task.created_at)
     task.updated_at = data.get("updated_at", task.updated_at)
     task.error = data.get("error")
@@ -113,7 +113,7 @@ async def fetch_video_task(conversation_id: str, message_id: str, timeout: int =
   """
   后台任务：定时获取视频链接
   - 每隔3分钟重试一次
-  - 最多重试5次
+  - 最多重试10次
   - 获取成功后停止
   """
   task = VideoStorage.get_task(conversation_id, message_id)
