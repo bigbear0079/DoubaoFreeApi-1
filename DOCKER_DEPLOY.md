@@ -58,8 +58,8 @@ docker-compose down
 ### 5. 访问服务
 
 服务启动后，访问：
-- API 文档: http://your-server-ip:8000/docs
-- 主页: http://your-server-ip:8000
+- API 文档: http://your-server-ip:8039/docs
+- 主页: http://your-server-ip:8039
 
 ## 🔧 常用命令
 
@@ -94,7 +94,7 @@ docker-compose up -d --build
 
 ### 端口映射
 
-默认映射 `8000:8000`，如需修改，编辑 `docker-compose.yml`：
+默认映射 `8039:8000`（宿主机 8039 端口映射到容器 8000 端口），如需修改，编辑 `docker-compose.yml`：
 
 ```yaml
 ports:
@@ -129,7 +129,7 @@ server {
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://localhost:8000;
+        proxy_pass http://localhost:8039;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -153,7 +153,7 @@ sudo certbot --nginx -d your-domain.com
 
 ```yaml
 ports:
-  - "127.0.0.1:8000:8000"
+  - "127.0.0.1:8039:8000"
 ```
 
 ## 🐛 故障排查
@@ -165,7 +165,7 @@ ports:
 docker-compose logs doubao-api
 
 # 检查端口占用
-sudo netstat -tulpn | grep 8000
+sudo netstat -tulpn | grep 8039
 
 # 检查 Docker 状态
 sudo systemctl status docker
